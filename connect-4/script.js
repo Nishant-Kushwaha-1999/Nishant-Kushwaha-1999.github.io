@@ -1,5 +1,5 @@
-// const apiURL = "http://192.168.1.81:6060/api/v1/";
-const apiURL = "http://107.218.138.164:6060/api/v1/";
+// const apiURL = "https://192.168.1.81:6060/api/v1/";
+const apiURL = "https://107.218.138.164:6060/api/v1/";
 
 document.addEventListener('DOMContentLoaded', () => {
     const boardElement = document.getElementById('board');

@@ -1,3 +1,6 @@
+// const apiURL = "http://192.168.1.81:6060/api/v1/";
+const apiURL = "http://107.218.138.164:6060/api/v1/";
+
 document.addEventListener('DOMContentLoaded', () => {
     const boardElement = document.getElementById('board');
     const rows = 6;
@@ -15,15 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Fetch nums games played from the server
-    fetch('http://localhost:3000/views')
+    fetch(apiURL+'/logs/pageVisit', {method: "POST"})
         .then(response => response.json())
         .then(data => {
             const pageViewsElement = document.getElementById('games-played');
-            pageViewsElement.textContent = `Games played: ${data.count}`;
+            pageViewsElement.textContent = `Visits: ${data.data.pageVisits}`;
         })
         .catch(error => {
             const pageViewsElement = document.getElementById('games-played');
-            pageViewsElement.textContent = `Games played: ${'1000+'}`;
+            pageViewsElement.textContent = `Visits: Loading...`;
         });
 
 
@@ -59,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 let win = result['win']
                 let plyr = result['plyr']
                 if (win) {
-                    // setTimeout(alert("Wing and reset"), 100);
                     declareWin(plyr);
                     return;
                 }
@@ -256,6 +258,13 @@ document.addEventListener('DOMContentLoaded', () => {
             resultHeading.textContent = 'YOU WON! 😊';
         }
         else if (plyr === -1) {
+            fetch(apiURL + '/logs/botWins', {method: "POST"})
+                .then(response => response.json())
+                .then(data => {
+                    const pageViewsElement = document.getElementById('games-played');
+                    pageViewsElement.textContent = `Visits: ${data.data.pageVisits}`;
+                })
+            
             resultHeading.textContent = 'BOT WINS!! 🤔';
         }
 

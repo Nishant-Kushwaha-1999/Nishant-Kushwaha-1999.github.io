@@ -24,17 +24,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             return data;
         } catch(error) {
-            return undefined;
+            throw error;
+            
         }
     }
     
     // Setting up games played stats
-    const pageVisitResponse = await fetchData(apiURL + "/logs/pageVisit", {method: "POST", mode: "cors"});
-    const pageViewsElement = document.getElementById('games-played');
-    if(!pageVisitResponse) {
-        pageViewsElement.textContent = `Visits: Loading...`;
-    } else {
-        pageViewsElement.textContent = `Visits: ${pageVisitResponse.data.pageVisits}`;
+    try {
+        const pageVisitResponse = await fetchData(apiURL + "/logs/pageVisit", {method: "POST", mode: "cors"});
+        console.log("Response", pageVisitResponse);
+        if(!pageVisitResponse) {
+            const instructionsOverlay = document.getElementById('instructions');
+            instructionsOverlay.textContent = `404: Cannot connect to server...`;
+        } else {
+            const pageViewsElement = document.getElementById('games-played');
+            pageViewsElement.textContent = `Visits: ${pageVisitResponse.data.pageVisits}`;
+        }
+    } catch (error) {
+        const instructionsOverlay = document.getElementById('instructions');
+        instructionsOverlay.textContent = `404: Cannot connect to server...`;
     }
 
     async function pingGameStarted(params) {

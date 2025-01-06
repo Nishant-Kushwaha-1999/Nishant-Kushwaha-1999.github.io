@@ -1,5 +1,6 @@
 // const apiURL = "http://localhost:80/api/v1";
-const apiURL = "https://personlprojectsnk.com/api/v1";
+const apiURL = "http://192.168.1.81:80/api/v1";
+// const apiURL = "https://personlprojectsnk.com/api/v1";
 
 document.addEventListener('DOMContentLoaded', async () => {
     const boardElement = document.getElementById('board');
@@ -32,7 +33,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setting up games played stats
     try {
         const pageVisitResponse = await fetchData(apiURL + "/logs/pageVisit", {method: "POST", mode: "cors"});
-        console.log("Response", pageVisitResponse);
         if(!pageVisitResponse) {
             const instructionsOverlay = document.getElementById('instructions');
             instructionsOverlay.textContent = `404: Cannot connect to server...`;

@@ -1,7 +1,7 @@
-// const apiURL = "https://192.168.1.81:6060/api/v1/";
-const apiURL = "https://personlprojectsnk.com/api/v1/";
+// const apiURL = "http://localhost:80/api/v1";
+const apiURL = "https://personlprojectsnk.com/api/v1";
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const boardElement = document.getElementById('board');
     const rows = 6;
     const cols = 7;
@@ -18,16 +18,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Fetch nums games played from the server
-    fetch(apiURL+'/logs/pageVisit', {method: "POST"})
-        .then(response => response.json())
-        .then(data => {
+    async function fetchData(url, params={method: "GET", mode: "cors"}) {
+        try {
+            const response = await fetch(url, params);
+            const data = await response.json();
+            return data;
+        } catch(error) {
+            return undefined;
+        }
+    }
+    
+    // Setting up games played stats
+    const pageVisitResponse = await fetchData(apiURL + "/logs/pageVisit", {method: "POST", mode: "cors"});
+    const pageViewsElement = document.getElementById('games-played');
+    if(!pageVisitResponse) {
+        pageViewsElement.textContent = `Visits: Loading...`;
+    } else {
+        pageViewsElement.textContent = `Visits: ${pageVisitResponse.data.pageVisits}`;
+    }
+
+    async function pingGameStarted(params) {
+        function sumArray(a, idx) {
+            if (idx === a.length) {
+                return 0;
+            }
+            return Math.abs(a[idx]) + sumArray(a, idx + 1);
+        }
+        if(sumArray(board[5], 0) == 1) {
+            const pageVisitResponse = await fetchData(apiURL + "/logs/gameStarted", {method: "POST", mode: "cors"});
             const pageViewsElement = document.getElementById('games-played');
-            pageViewsElement.textContent = `Visits: ${data.data.pageVisits}`;
-        })
-        .catch(error => {
-            const pageViewsElement = document.getElementById('games-played');
-            pageViewsElement.textContent = `Visits: Loading...`;
-        });
+            if(!pageVisitResponse) {
+                pageViewsElement.textContent = `Visits: Loading...`;
+            } else {
+                pageViewsElement.textContent = `Visits: ${pageVisitResponse.data.pageVisits}`;
+            }
+        }
+    }
 
 
     function createBoard() {
@@ -71,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function botMove() { 
+    async function botMove() {
         let botMv = Math.floor(Math.random() * 14);
         displayBotMove(botMv)
 
@@ -249,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function declareWin(plyr) {
+    async function declareWin(plyr) {
         const popup = document.getElementById('result');
         const closePopupButton = document.getElementById('close-result');
 
@@ -258,13 +284,14 @@ document.addEventListener('DOMContentLoaded', () => {
             resultHeading.textContent = 'YOU WON! 😊';
         }
         else if (plyr === -1) {
-            fetch(apiURL + '/logs/botWins', {method: "POST"})
-                .then(response => response.json())
-                .then(data => {
-                    const pageViewsElement = document.getElementById('games-played');
-                    pageViewsElement.textContent = `Visits: ${data.data.pageVisits}`;
-                })
-            
+            const botWinsResponse = await fetchData(apiURL + "/logs/botWins", {method: "POST", mode: "cors"});
+            const pageViewsElement = document.getElementById('games-played');
+            if(!botWinsResponse) {
+                pageViewsElement.textContent = `Visits: Loading...`;
+            } else {
+                pageViewsElement.textContent = `Visits: ${botWinsResponse.data.pageVisits}`;
+            }
+
             resultHeading.textContent = 'BOT WINS!! 🤔';
         }
 

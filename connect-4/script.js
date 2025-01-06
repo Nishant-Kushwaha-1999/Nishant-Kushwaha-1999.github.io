@@ -29,20 +29,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             
         }
     }
+
+    function cannotConnectToServer() {
+        const instructionsOverlay = document.getElementById('instructions');
+        instructionsOverlay.textContent = `404: Cannot connect to server.\nPlease try again after some time.`;
+        instructionsOverlay.style.display = 'flex';
+
+        window.addEventListener('click', (event) => {
+            if (event.target === instructionsOverlay) {
+                popup.style.display = 'flex';
+            }
+        });
+    }
     
     // Setting up games played stats
     try {
         const pageVisitResponse = await fetchData(apiURL + "/logs/pageVisit", {method: "POST", mode: "cors"});
         if(!pageVisitResponse) {
-            const instructionsOverlay = document.getElementById('instructions');
-            instructionsOverlay.textContent = `404: Cannot connect to server...`;
+            cannotConnectToServer();
         } else {
             const pageViewsElement = document.getElementById('games-played');
             pageViewsElement.textContent = `Visits: ${pageVisitResponse.data.pageVisits}`;
         }
     } catch (error) {
-        const instructionsOverlay = document.getElementById('instructions');
-        instructionsOverlay.textContent = `404: Cannot connect to server...`;
+        cannotConnectToServer();
     }
 
     async function pingGameStarted(params) {
@@ -82,7 +92,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function handleCellClick(event) {
-        console.log(playerCanMove);
         if (!playerCanMove) return;
         const col = event.target.dataset.col;
         const emptyRow = getEmptyRow(col);
@@ -90,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (emptyRow != null) {
             playerCanMove = false;
             dropCoin(emptyRow, col, currentPlayer, () => {
-                console.log(board);
+                // console.log(board);
             
                 let result = checkWin();
                 let win = result['win']
@@ -106,8 +115,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function botMove() {
-        let botMv = Math.floor(Math.random() * 14);
-        displayBotMove(botMv)
+        let botMv = undefined;
+        try {
+            const botMoveResponse = await fetchData(apiURL + "/bot/getBotMove", {method: "GET", mode: "cors"});
+            botMv = botMoveResponse.data.botMove;
+            displayBotMove(botMv)
+        } catch (error) {
+            cannotConnectToServer();
+        }
+        // console.log(botMv);
+        
+        displayBotMove(botMv);
 
         if ((botMv - 7) < 0) {
             const emptyRow = getEmptyRow(botMv);
@@ -140,7 +158,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function displayBotMove(move) {
-        console.log("funccall", move);
         const botmovedisplay = document.getElementById('bot-move');
         if ((move - 7) < 0) {
             botmovedisplay.textContent = `Bot Move: Drop Col -> ${move}`;
@@ -182,7 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert("Wrong Selection");
         }
         botMove()
-        console.log(board)
+        // console.log(board)
     }
 
     function removeCoin(row, col, callback) {
